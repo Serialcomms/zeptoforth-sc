@@ -25,21 +25,6 @@ marker remove-usb-cdc-buffers
 
   begin-module usb-cdc-buffers
 
-    \ TX pending operation
-    pending-op-size buffer: tx-pending-op
-
-    \ Debug console only ( will try to toggle with break )
-    variable console-debug?
-
-    \ Ready to send more data
-    variable next-tx-initial?
-
-    \ Saved reboot hook
-    variable saved-reboot-hook
-    
-    \ Are special keys enabled for USB
-    variable usb-special-enabled
-
     \ RAM variable for rx buffer read-index
     variable rx-read-index
 
@@ -69,15 +54,6 @@ marker remove-usb-cdc-buffers
 
     \ Constant for rx buffer size mask 
     rx-buffer-size 1- constant rx-buffer-size-mask 
-
-    \ TX buffer that is not circular - todo - deprecate
-    tx-buffer-size buffer: tx-straight-buffer
-
-    \ The TX core lock
-    core-lock-size buffer: tx-core-lock
-
-    \ The RX core lock
-    core-lock-size buffer: rx-core-lock
 
     : init-rx ( -- )
       0 rx-read-index !
@@ -176,7 +152,6 @@ marker remove-usb-cdc-buffers
       else
         tx-buffer-size read-index - write-index +
       then
-    
     ;
 
    \ Get number of free bytes available in tx buffer
