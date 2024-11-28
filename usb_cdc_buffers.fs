@@ -93,7 +93,7 @@ marker remove-usb-cdc-buffers
     
     \ Get whether the rx buffer is full
     : rx-full? ( -- f )
-      rx-read-index @ 1- $FF and rx-write-index @ =
+      rx-read-index @ 1- rx-buffer-size-mask and rx-write-index @ =
     ;
 
     \ Get whether the rx buffer is empty
