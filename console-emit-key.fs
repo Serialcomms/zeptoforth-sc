@@ -34,7 +34,7 @@
 
         ep1-to-pico queue-long? @ if                \ is queue previously marked as long ( < 64 free bytes remaining ) ?
 
-        rx-count 63 > if                            \ did read-rx make 64 bytes or more available to receive ?
+        rx-buffer-size 1- 64 - rx-count > if       \ did read-rx make 64 bytes or more available to receive ?
 
             false ep1-to-pico queue-long? !         \ cancel queue-long ( if previously set by ep1-handler-to-pico )
 
