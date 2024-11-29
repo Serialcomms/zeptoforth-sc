@@ -47,7 +47,7 @@
 
     rx-full? not if
 
-      EP1-to-Pico dpram-address i + c@ write-rx
+      EP1-to-Pico dpram-address @ i + c@ write-rx
 
     then
 
@@ -55,7 +55,7 @@
 
   then
 
-  63 rx-count > if
+  rx-free 63 > if
 
     false EP1-to-Pico queue-long? !
 
