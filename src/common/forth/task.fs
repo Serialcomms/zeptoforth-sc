@@ -27,7 +27,7 @@ begin-module task
   interrupt import
   multicore import
   systick import
-  int-io import
+  serial import
   armv6m import
   
   begin-module task-internal
@@ -1046,7 +1046,7 @@ begin-module task
     dup validate-not-terminated
     tuck task-wake-after !
     blocked-wait over task-state h!
-    current-task @ = if pause-wo-reschedule then
+    current-task @ = if pause-reschedule-last then
   ;
   
   \ Mark a task as blocked indefinitely
@@ -2285,8 +2285,8 @@ begin-module task
 	wait-current-core
         NVIC_ICPR_CLRPEND_All!
         current-task @ task-dict-base @ dict-base !
-	$7F SHPR3_PRI_15!
-	$FF SHPR2_PRI_11!
+	$00 SHPR3_PRI_15!
+	$00 SHPR2_PRI_11!
         $FF SHPR3_PRI_14!
         [ rp2040? ] [if]
           $00 SIO_IRQ_PROC1 NVIC_IPR_IP!
@@ -2455,7 +2455,7 @@ begin-module task
     0 watchdog-hook !
     NVIC_ICPR_CLRPEND_All!
     0 pause-enabled !
-    $7F SHPR3_PRI_15!
+    $00 SHPR3_PRI_15!
     $00 SHPR2_PRI_11!
     $FF SHPR3_PRI_14!
     stack-end @ free-end !

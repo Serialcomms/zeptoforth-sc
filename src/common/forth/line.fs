@@ -1,4 +1,4 @@
-\ Copyright (c) 2021-2024 Travis Bemann
+\ Copyright (c) 2021-2025 Travis Bemann
 \ 
 \ Permission is hereby granted, free of charge, to any person obtaining a copy
 \ of this software and associated documentation files (the "Software"), to deal
@@ -91,6 +91,12 @@ begin-module line-internal
   $15 constant ctrl-u
   $17 constant ctrl-w
   $19 constant ctrl-y
+
+  \ The saved REFILL hook
+  variable saved-refill-hook
+
+  \ The saved ACCEPT hook
+  variable saved-accept-hook
   
   commit-flash
   
@@ -200,6 +206,21 @@ begin-module line-internal
       0 line @ line-start-column h! 1 line @ line-start-row h+!
       line @ line-start-row h@ line @ line-terminal-rows h@ >= if
 	line @ line-terminal-rows h@ 1- line @ line-start-row h!
+      then
+    then
+  ;
+
+  \ Check for new line(s)
+  : check-new-line { scroll? -- }
+    line @ line-count @ 0> if
+      line @ line-start-column h@ line @ line-count h@ + { full-columns }
+      full-columns line @ line-terminal-columns h@ u/ { full-rows }
+      line @ line-start-row h@ full-rows + { end-row }
+      end-row line @ line-terminal-rows h@ >= if
+        line @ line-start-row h@
+        end-row 1+ line @ line-terminal-rows h@ -
+        scroll? if dup scroll-up then
+        - 0 max line @ line-start-row h!
       then
     then
   ;
@@ -559,7 +580,7 @@ begin-module line-internal
       insert-byte if
 	line @ line-index-ptr @ @ get-spaces-to-index swap -
 	dup line @ line-offset h+! line @ line-count h+!
-	update-line
+        true check-new-line update-line
       else
 	drop
       then
@@ -569,13 +590,15 @@ begin-module line-internal
 	append-byte if
 	  line @ line-index-ptr @ @ get-spaces-to-index swap -
 	  dup line @ line-offset h+! line @ line-count h+!
-	  line @ line-buffer-ptr @ line @ line-index-ptr @ @ + 1- c@ emit
+          line @ line-buffer-ptr @ line @ line-index-ptr @ @ + 1- c@ emit
+          false check-new-line
 	then
       else
 	append-byte if
 	  line @ line-index-ptr @ @ get-spaces-to-index swap - 0 ?do
 	    1 line @ line-offset h+! 1 line @ line-count h+!
-	    $20 emit
+            $20 emit
+            false check-new-line
 	  loop
 	then
       then
@@ -625,7 +648,7 @@ begin-module line-internal
     pasted? if
       line @ line-index-ptr @ @ get-spaces-to-index { end-count }
       end-count start-count - dup line @ line-offset h+! line @ line-count h+!
-      update-line
+      true check-new-line update-line
     then
   ;
 
@@ -825,7 +848,11 @@ begin-module line-internal
   commit-flash
   
   \ The line editor
-  : line-edit ( -- )
+  : line-edit ( index-ptr count-ptr buffer-ptr buffer-size -- )
+    line @ line-buffer-size !
+    line @ line-buffer-ptr !
+    line @ line-count-ptr !
+    line @ line-index-ptr !
     xon ack reset-line
     begin
       get-key
@@ -891,10 +918,26 @@ begin-module line-internal
     ['] line-edit over line-edit-deferred !
     history-block-size history-block-count 2 pick line-history-heap init-heap
     line !
+    0 saved-refill-hook !
+    0 saved-accept-hook !
+  ;
+
+  \ Edit a line for refill
+  : refill-edit ( -- )
+    >in input# input input-size 255 min line-edit
+  ;
+
+  \ Edit a line for accept
+  : accept-edit { addr bytes -- bytes' }
+    0 0 { W^ index W^ count }
+    index count addr bytes line-edit
+    count @
   ;
   
   \ Initialize for refill
-  : init-line-refill ( -- ) >in input# input input-size init-line ;
+  : init-line-refill ( -- )
+    >in input# input input-size init-line
+  ;
 
 end-module> import
 
@@ -909,13 +952,21 @@ internal import
 commit-flash
 
 \ Enable line editor
-: enable-line ( -- ) ['] line-edit refill-hook ! ;
+: enable-line ( -- )
+  refill-hook @ saved-refill-hook !
+  accept-hook @ saved-accept-hook !
+  ['] refill-edit refill-hook !
+  ['] accept-edit accept-hook !
+;
 
 \ Disable line editor
-: disable-line ( -- ) ['] do-refill refill-hook ! ;
+: disable-line ( -- )
+  ['] refill-edit refill-hook @ = if saved-refill-hook @ refill-hook ! then
+  ['] accept-edit accept-hook @ = if saved-accept-hook @ accept-hook ! then
+;
 
 \ Get whether the line editor is enabled
-: line-enabled? ( -- ) refill-hook @ ['] line-edit = ;
+: line-enabled? ( -- ) refill-hook @ ['] refill-edit = ;
 
 end-compress-flash
 
