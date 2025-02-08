@@ -1,6 +1,6 @@
-\ Copyright (c) 2023-2025 Travis Bemann
-\ Copyright (c) 2025 Paul Koning
-\ 
+\ Copyright (c) 2025 tmsgthb (GitHub)
+\ Copyright (c) 2025 Travis Bemann
+\
 \ Permission is hereby granted, free of charge, to any person obtaining a copy
 \ of this software and associated documentation files (the "Software"), to deal
 \ in the Software without restriction, including without limitation the rights
@@ -19,11 +19,28 @@
 \ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 \ SOFTWARE.
 
-#include extra/rp_common/net/net_consts.fs
-#include extra/rp_common/net/net_config.fs
-#include extra/rp_common/net/net_misc.fs
-#include extra/rp_common/net/frame_process.fs
-#include extra/rp_common/net/net.fs
-#include extra/rp_common/net/net_diagnostic.fs
-#include extra/rp_common/net/endpoint_process.fs
-#include extra/rp_common/net/simple_net.fs
+\ This is a demo for the LCD1602 I2C module.
+
+begin-module lcd1602-demo
+
+  lcd1602 import
+
+  \ Constants
+  0 constant I2C_0
+  4 constant PIN_SDA \ GPIO 4, PIN 6
+  5 constant PIN_SCL \ GPIO 5, PIN 7
+
+  \ Run the demo
+  : run-demo ( -- )
+    PIN_SCL PIN_SDA I2C_0 init-lcd-i2c
+    init-lcd
+    5 0 do
+      0 1 s" hello" put-text
+      1 2 s" zeptoforth" put-text
+      3000 ms clear-display
+      1 3 s" another msg" put-text
+      3000 ms clear-display
+    loop
+  ;
+
+end-module

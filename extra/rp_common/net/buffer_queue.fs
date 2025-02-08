@@ -1,4 +1,5 @@
 \ Copyright (c) 2024-2025 Travis Bemann
+\ Copyright (c) 2025 Paul Koning
 \
 \ Permission is hereby granted, free of charge, to any person obtaining a copy
 \ of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +91,7 @@ begin-module buffer-queue
     \ Attempt to put a buffer
     : _poll-put-buffer ( addr bytes self -- success? )
       [: { addr bytes self }
-        bytes cell align cell+ { bytes' }
+        bytes 2 + cell align { bytes' }
         self get-offset @ { get-offset' }
         self put-offset @ { put-offset' }
         put-offset' bytes' + dup self data-size @ > if
@@ -106,8 +107,8 @@ begin-module buffer-queue
           else
 \            ." *"
             self data-addr @ start-offset + { start-addr }
-            bytes start-addr !
-            addr start-addr cell+ bytes move
+            bytes start-addr h!
+            addr start-addr 2 + bytes move
             next-offset self put-offset !
             true
           then
@@ -119,8 +120,8 @@ begin-module buffer-queue
             get-offset' put-offset' <= next-offset get-offset' < and if
               \            ." #"
               self data-addr @ start-offset + { start-addr }
-              bytes start-addr !
-              addr start-addr cell+ bytes move
+              bytes start-addr h!
+              addr start-addr 2 + bytes move
               next-offset self put-offset !
               end-offset' self end-offset !
               true
@@ -195,7 +196,7 @@ begin-module buffer-queue
       { get-offset' end-offset' put-offset' }
       put-offset' get-offset' <> if
         self data-addr @ get-offset' + { get-addr }
-        get-addr cell+ get-addr @ true
+        get-addr 2 + get-addr h@ true
       else
         0 0 false
       then
@@ -205,7 +206,7 @@ begin-module buffer-queue
     : _retire-buffer ( self -- )
       [: { self }
         self get-offset @ { get-offset' }
-        self data-addr @ get-offset' + @ cell align cell+ get-offset' +
+        self data-addr @ get-offset' + h@ 2 + cell align get-offset' +
         dup self end-offset @ = if drop 0 0 self end-offset ! then
         self get-offset !
       ;] over end-slock with-slock
