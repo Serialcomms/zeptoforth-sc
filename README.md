@@ -1,3 +1,12 @@
+### 10 February 2025
+
+Please use the [main Zeptoforth repo](https://github.com/tabemann/zeptoforth) as all proposed USB/CDC changes have now been incorporated into it.
+
+This repo is not intended to be a fully maintained Zeptoforth fork and may be taken offline at some future date to avoid any confusion.
+
+
+
+
 # zeptoforth
 
 zeptoforth is a Cortex-M Forth, currently targeted at RP2040 boards such as the Raspberry Pi Pico, the Raspberry Pi Pico W, the Arduino Nano RP2040 Connect, the Cytron Maker Nano RP2040, the SeeedStudio XIAO RP2040, and the WIO RP2040 (which it has been tested with) using 25Q Quad SPI flash compatible with the Winbond Quad SPI flash on the Raspberry Pi Pico, RP2350 boards such as the Raspberry Pi Pico 2 and the Pimoroni Pico Plus 2, the STM32L476, STM32F407, and STM32F746 DISCOVERY boards, and the STM32F411 "Black Pill" board. Ports to more platforms are on hold due to the current chip shortage (aside from a possible port to an STM32H7 board I have lying around somewhere). A hack exists for getting zeptoforth to work properly on STM32F411 Nucleo 64 boards using the binaries compiled for STM32F411 "Black Pill" boards.
